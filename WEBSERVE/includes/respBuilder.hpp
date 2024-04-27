@@ -20,7 +20,7 @@ class Response {
         void    getMethod();
         void    exute_cgi(std::stringstream& response);
         bool    is_cgi();
-        void DELETE(const std::string& path);
+        int DELETE(const std::string& path);
         std::string  read_from_a_file();
         std::string  read_from_a_pipe();
         std::string  list_folder();

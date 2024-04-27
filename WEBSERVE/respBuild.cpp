@@ -81,7 +81,7 @@ void Response::exute_cgi(std::stringstream& response)
     {
         signal(SIGALRM, child_timeout_handler);
             // Set the timeout duration for child process execution
-        const int child_timeout_seconds = 5;  // Change this to the desired timeout duration
+        const int child_timeout_seconds = 3;  // Change this to the desired timeout duration
 
         // Set the alarm to go off after the specified timeout
         alarm(child_timeout_seconds);
@@ -109,70 +109,75 @@ void Response::exute_cgi(std::stringstream& response)
     else
     {
         int status;
-        waitpid(c_pid, &status, WNOWAIT);
+        waitpid(c_pid, &status, 0);
 
-        if (timeout_flag) {
-            std::cerr << "Child process execution timed out" << std::endl;
-            // Optionally, you can terminate the child process here
-            // kill(c_pid, SIGKILL);
-        }
-        else
-        {
+        // if (timeout_flag) {
+        //     std::cerr << "Child process execution timed out" << std::endl;
+        //     // Optionally, you can terminate the child process here
+        //     // kill(c_pid, SIGKILL);
+        // }
+        // else
+        // {
             if (WIFEXITED(status))
             {
                 if (WEXITSTATUS(status) != 0)
+                {
+                    struct stat statbuf;
+                    req->uri_depon_cs( 500 );
+                    stat( req->request.uri.c_str(), &statbuf );
+                    response << "HTTP/1.1 500 OK\r\n";
+                    response << "Content-Type: text/html\r\n";
+                    response << "Content-Lenght: ";
+                    response << statbuf.st_size;
+                    response << "\r\n";
+                    response << "\r\n";
+                    response << read_from_a_file();
+                    endOfResp = 1;
                     std::cerr << "Child process exited with non-zero status: " << WEXITSTATUS(status) << std::endl;
+                }
             }
             else if (WIFSIGNALED(status))
             {
-                cgi_on = false;
+                struct stat statbuf;
                 req->uri_depon_cs( 500 );
-                std::cerr << "Child process exited due to signal: " << WTERMSIG(status) << std::endl;
-
+                stat( req->request.uri.c_str(), &statbuf );
+                response << "HTTP/1.1 500 OK\r\n";
+                response << "Content-Type: text/html\r\n";
+                response << "Content-Lenght: ";
+                response << statbuf.st_size;
+                response << "\r\n";
+                response << "\r\n";
+                response << read_from_a_file();
+                endOfResp = 1;
             }
-            response << "HTTP/1.1 200 OK\r\n";
-            response << "Content-Type: text/plain\r\n";
-            response << "Content-Lenght: ";
-            response << bdy.size();
-            response << "\r\n";
-            response << "\r\n";
-        }
+            else
+            {
+                response << "HTTP/1.1 200 OK\r\n";
+                response << "Content-Type: text/plain\r\n";
+                response << "Transfer-Encoding: chunked\r\n";
+                response << "\r\n";
+            }
+
+        // }
     }
     close(pipfd[1]);
-    //     }
-    // }
-    // else
-    // {
-    //     response << std::hex << bytesRead << "\r\n";
-    //     if (bytesRead)
-    //         response.write(buffer, bytesRead);
-    //     else
-    //     {
-    //         endOfResp = 1;
-            // close(pipfd[0]);
-    //     }
-    // }
-    // if (cgi_on == false)
-    //     endOfResp = 0;
 }
 
 std::string     Response::read_from_a_pipe()
 {
     std::stringstream response;
     const int chunkSize = 1024;
-    char buffer[chunkSize];
+    char buffer[chunkSize + 1];
     memset(buffer, 0, chunkSize);
-    size_t bytesRead = read(pipfd[0], buffer, sizeof(buffer));
+    size_t bytesRead = read(pipfd[0], buffer, chunkSize);
+    response << std::hex << bytesRead << "\r\n";
     if (bytesRead)
         response.write(buffer, bytesRead);
-    // else
-    // {
-        response << "\r\n";
+    else
+    {
         endOfResp = 1;
         close(pipfd[0]);
-    // }
-    std::cerr<<"response: "<<bytesRead<<std::endl;
-
+    }
     return response.str();
 }
 
@@ -235,18 +240,18 @@ bool    Response::is_cgi()
 #include <dirent.h>
 #include <sys/stat.h>
 
-void Response::DELETE(const std::string& path)
+int    Response::DELETE(const std::string& path)
 {
     if (!folder)
     {
         if (access(path.c_str(), W_OK) == 0)
             unlink(path.c_str());
-        return;
+        return 0;
     }
-    
+
     DIR* dir = opendir(path.c_str());
     if (!dir)
-        return;
+        return 1;
 
     dirent* entry;
     while ((entry = readdir(dir)))
@@ -261,27 +266,35 @@ void Response::DELETE(const std::string& path)
                 {
                     if (access(fullPath.c_str(), W_OK) == 0)
                         DELETE(fullPath);
+                    else
+                        return 1;
                 }
                 else
                 {
                     if (access(fullPath.c_str(), W_OK) == 0)
                         unlink(fullPath.c_str());
+                    else
+                        return 1;
                 }
             }
+            else
+                return 1;
         }
     }
 
     closedir(dir);
     if (access(path.c_str(), W_OK) == 0)
         rmdir(path.c_str());
+    return 0;
 }
 
 std::string Response::getHdResp()
 {
     struct stat statbuf;
     std::stringstream response;
-    std::cerr<<"*********"<<req->request.uri<<"**********"<<std::endl;
+    std::cerr << "*********" << req->request.uri << "**********" <<std::endl;
     stat( req->request.uri.c_str(), &statbuf );
+
     if (req->request.status == 301)
     {
         response << "HTTP/1.1 " << req->request.status << " Moved Permanently\r\n";
@@ -310,12 +323,14 @@ std::string Response::getHdResp()
     stat( req->request.uri.c_str(), &statbuf );
     response << "HTTP/1.1 " << req->request.status << " OK\r\n";
     // std::cerr<<"******************"<<req->request.status<<"**********************"<<std::endl;
-    
+
     // std::cerr<<"***************************"<<std::endl;
     if (req->request.method == "DELETE")
     {
-        DELETE(req->request.uri);
-        req->uri_depon_cs( 200 );
+        if ( DELETE(req->request.uri) )
+            req->uri_depon_cs( 500 );
+        else
+            req->uri_depon_cs( 200 );
     }
     response << "Content-Type: ";
     response << get_file_ext(req->request.uri) << "\r\n";
