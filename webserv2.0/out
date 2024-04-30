@@ -1,0 +1,29 @@
+all good the server is pushed to the container of servers
+server 1 has : 2 location
+server : reda1 listen to port : 4444
+---- IN reqhandler CONSTRUCTOR ----
+390 bytes popopo
+in check buffer
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+[31mDELETE /tt.txt HTTP/1.1
+Host: localhost:4444
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0
+Accept: */*
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Origin: http://localhost:4444
+Connection: keep-alive
+Sec-Fetch-Dest: empty
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Site: same-origin
+Pragma: no-cache
+Cache-Control: no-cache
+
+[0m
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+REQUEST PARSING -------------
+parse Headers here
+uri to split >>>>>>>> /tt.txt
+sent : 65 bytes
+ Response destructor called
+destructor requesthandler is called
