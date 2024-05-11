@@ -59,9 +59,9 @@ int checkUrirPath( std::string &str )
             std::cerr << "getcwd reqhandler error" << std::endl;
             return 0;
         }
-        std::string s = rPath;
+        str = rPath; // recently changed
         std::string pwd = rPwd;
-        if ( s == rPwd )
+        if ( str == rPwd )
             return 0;
         return 1;
     }
@@ -120,23 +120,23 @@ void    ReqHandler::reqStrToVec( std::string &line )
 void    ReqHandler::uri_depon_cs( int code )
 {
     std::map<int, std::string> defErrP;
-    defErrP[400] = "../../Desktop/webserv2.0/errPages/err400.html";
-    defErrP[401] = "../../Desktop/webserv2.0/errPages/err401.html";
-    defErrP[402] = "../../Desktop/webserv2.0/errPages/err402.html";
-    defErrP[403] = "../../Desktop/webserv2.0/errPages/err403.html";
-    defErrP[404] = "../../Desktop/webserv2.0/errPages/err404.html";
-    defErrP[405] = "../../Desktop/webserv2.0/errPages/err405.html";
-    defErrP[408] = "../../Desktop/webserv2.0/errPages/err408.html";
-    defErrP[409] = "../../Desktop/webserv2.0/errPages/err409.html";
-    defErrP[410] = "../../Desktop/webserv2.0/errPages/err410.html";
-    defErrP[411] = "../../Desktop/webserv2.0/errPages/err411.html";
-    defErrP[413] = "../../Desktop/webserv2.0/errPages/err413.html";
-    defErrP[414] = "../../Desktop/webserv2.0/errPages/err414.html";
-    defErrP[415] = "../../Desktop/webserv2.0/errPages/err415.html";
-    defErrP[500] = "../../Desktop/webserv2.0/errPages/err500.html";
-    defErrP[501] = "../../Desktop/webserv2.0/errPages/err501.html";
-    defErrP[505] = "../../Desktop/webserv2.0/errPages/err505.html";
-    defErrP[200] = "../../Desktop/webserv2.0/success.html";
+    defErrP[400] = "../../Desktop/webserv_v/errPages/err400.html";
+    defErrP[401] = "../../Desktop/webserv_v/errPages/err401.html";
+    defErrP[402] = "../../Desktop/webserv_v/errPages/err402.html";
+    defErrP[403] = "../../Desktop/webserv_v/errPages/err403.html";
+    defErrP[404] = "../../Desktop/webserv_v/errPages/err404.html";
+    defErrP[405] = "../../Desktop/webserv_v/errPages/err405.html";
+    defErrP[408] = "../../Desktop/webserv_v/errPages/err408.html";
+    defErrP[409] = "../../Desktop/webserv_v/errPages/err409.html";
+    defErrP[410] = "../../Desktop/webserv_v/errPages/err410.html";
+    defErrP[411] = "../../Desktop/webserv_v/errPages/err411.html";
+    defErrP[413] = "../../Desktop/webserv_v/errPages/err413.html";
+    defErrP[414] = "../../Desktop/webserv_v/errPages/err414.html";
+    defErrP[415] = "../../Desktop/webserv_v/errPages/err415.html";
+    defErrP[500] = "../../Desktop/webserv_v/errPages/err500.html";
+    defErrP[501] = "../../Desktop/webserv_v/errPages/err501.html";
+    defErrP[505] = "../../Desktop/webserv_v/errPages/err505.html";
+    defErrP[200] = "../../Desktop/webserv_v/success.html";
     std::map<int, std::string>::iterator it = myServ.errorpage.find( code );
     request.status = code;
     endOfRead = 1;

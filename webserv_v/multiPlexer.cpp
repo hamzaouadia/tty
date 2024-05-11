@@ -1,7 +1,7 @@
 #include <signal.h>
 #include "includes/multiPlex.hpp"
 
-int read_size = 1024;
+// int read_size = 1024;
 
 std::vector<Serv>    MultiPlexer::getServBySock( int sock, std::vector<Serv> &servers )
 {
@@ -43,19 +43,21 @@ int MultiPlexer::existentSockForPort( int &nport )
 MultiPlexer::MultiPlexer( std::vector<Serv> &servers )
 {
     epollFd = epoll_create( servers.size() );
+    // std::cerr << " multi xxfd epoll : " << epollFd << std::endl;
+
     if ( epollFd == -1 )
         throw std::runtime_error( "Epoll creation failed");
     for ( std::vector<Serv>::iterator it = servers.begin() ; it != servers.end() ; it++ ) {
-        if ( !existentSockForPort( it->port ) )
-        {
+        // if ( !existentSockForPort( it->port ) )
+        // {
             int sock = socket( AF_INET, SOCK_STREAM, 0 );
             if ( sock == -1 )
                 throw std::runtime_error( "Socket creation failed");
-            int f = fcntl(sock, F_GETFL, 0);
-            if ( f == -1 )
-                throw std::runtime_error( "F_GETFL in fcntl failed");
-            if ( fcntl(sock, F_SETFL, f | O_NONBLOCK) == -1)
-                throw std::runtime_error( "Failed to set socket to non block");
+            // int f = fcntl(sock, F_GETFL, 0);
+            // if ( f == -1 )
+            //     throw std::runtime_error( "F_GETFL in fcntl failed");
+            // if ( fcntl(sock, F_SETFL, f | O_NONBLOCK) == -1)
+            //     throw std::runtime_error( "Failed to set socket to non block");
             int reuse = 1;
             if ( setsockopt( sock, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse) ) == -1 )  // remove reuse port & add REUSEADDR
                 throw std::runtime_error( "Failed to set socket option to REUSE");
@@ -70,7 +72,7 @@ MultiPlexer::MultiPlexer( std::vector<Serv> &servers )
             std::cout << "server : " << it->servName << " listen to port : " << it->port << std::endl;
             socknData[sock] = servAdd;
             addSockToEpoll( sock );
-        }
+        // }
     }
 }
 
@@ -100,7 +102,8 @@ void    MultiPlexer::acceptCli( int fd, std::vector<Serv> &servers, std::map<int
 
 int MultiPlexer::spotIn( int fd, ReqHandler* obj, std::map<int, ReqHandler*> &reqMap )
 {
-    char buff[read_size];
+    // std::cout << "plz : " << fd << " --- " << obj->read_size << std::endl; 
+    char buff[obj->read_size];
     memset(buff, 0, sizeof(buff) );
     size_t bytes = read( fd, buff, sizeof(buff) - 1 );
     obj->clock_out = clock();
@@ -134,27 +137,61 @@ int MultiPlexer::spotIn( int fd, ReqHandler* obj, std::map<int, ReqHandler*> &re
 int MultiPlexer::spotOut( int fd, ReqHandler* obj, std::map<int, Response*> &resMap, std::map<int, ReqHandler*> &reqMap )
 {
     obj->clock_out = clock();
-    read_size = 1024;
+    obj->read_size = 1024;
     std::map<int, Response*>::iterator itr = resMap.find( fd );
     if ( itr == resMap.end() )
     {
-        Response *rs = new Response( obj, fd );
+        Response *rs = new Response( obj, fd, epollFd );
+        // rs->ep_fd = epollFd;
+        // std::cerr << "rs->ep_fd mult : "<< rs->ep_fd << std::endl;
+        // std::cerr << "************" << rs->endOfResp <<std::endl;
         resMap[fd] = rs;
     }
     else
     {
         ssize_t bytesSent;
-        std::string resp;
+        std::stringstream resp;
         if (itr->second->endOfResp != 1)
         {
-            if (itr->second->cgi_on == true)
-                resp = itr->second->read_from_a_pipe();
-            else
-                resp = itr->second->folder == false ? itr->second->read_from_a_file() : itr->second->list_folder();
-            bytesSent = send( fd, resp.c_str(), resp.size(), 0);
+            clock_t end = clock();
+            if (itr->second->cgi_on)
+            {
+                float timeOut = static_cast<float>(end - itr->second->cgi_start) / CLOCKS_PER_SEC;
+                
+                if (WIFSIGNALED(itr->second->cgi_status))
+                    std::cerr << "ERRRRRRRROR : " << strerror(errno) << std::endl;
+
+                if (itr->second->endOfCGI)
+                    resp << itr->second->cgi_response();/*hena response akon dial cgi hadi atbedel*/
+                else if (timeOut > 4)
+                {
+                    struct stat statbuf;
+                    itr->second->req->uri_depon_cs(500);
+                    stat( itr->second->req->request.uri.c_str(), &statbuf );
+                    resp << "HTTP/1.1 500 OK\r\n";
+                    resp << "Content-Type: text/html\r\n";
+                    resp << "Content-Length: ";
+                    resp << statbuf.st_size;
+                    resp << "\r\n";
+                    resp << "\r\n";
+                    itr->second->cgi_on = false;
+                    itr->second->endOfResp = 0;
+                }
+            }
+            if (itr->second->cgi_on == false)
+            {
+                // std::cerr<<"folder : " << itr->second->folder <<std::endl;
+                resp << (itr->second->folder == false ? itr->second->read_from_a_file() : itr->second->list_folder());
+                // std::cerr<<"+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
+                // std::cerr<<resp<<std::endl;
+                // std::cerr<<"+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
+            }
+            bytesSent = send( fd, resp.str().c_str(), resp.str().size(), 0);
         }
         if ( itr->second->endOfResp || (int)bytesSent == -1 )
         {
+
+            // std::cerr << "ok destroyed  : " << fd << std::endl;
             delSockFrEpoll( fd );
             delete( itr->second );
             delete( obj );
@@ -166,6 +203,33 @@ int MultiPlexer::spotOut( int fd, ReqHandler* obj, std::map<int, Response*> &res
         }                        
     }
     return 1;
+}
+
+std::string     MultiPlexer::read_from_a_pipe(int fd, bool &pipe_closed)
+{
+    std::stringstream response;
+    const int chunkSize = 1024;
+    pipe_closed = false;
+    char buffer[chunkSize + 1];
+    memset(buffer, 0, chunkSize);
+    size_t bytesRead = read(fd, buffer, chunkSize);
+    // response << std::hex << bytesRead << "\r\n";
+    if (bytesRead)
+        response.write(buffer, bytesRead);
+    else
+    {
+        struct epoll_event ev;
+        ev.events = EPOLLIN;
+        ev.data.fd = fd;
+        // std::cerr<<"fd " << ev.data.fd << std::endl;
+        // std::cerr<<"epollfd " << epollFd << std::endl;
+        if ( epoll_ctl( epollFd, EPOLL_CTL_DEL, ev.data.fd, &ev ) == -1 )
+            std::cerr << "Error : " << strerror(errno) << std::endl;        // delSockFrEpoll(fd);
+        close(fd);
+        pipe_closed = true;
+        // std::cerr<<pipe_closed<<std::endl;
+    }
+    return response.str();
 }
 
 void    MultiPlexer::webServLoop( std::vector<Serv> &servers )
@@ -190,6 +254,22 @@ void    MultiPlexer::webServLoop( std::vector<Serv> &servers )
                 continue ;
             }
             std::map<int, ReqHandler*>::iterator it = reqMap.find( evs[i].data.fd );
+            // std::cerr << "checker : " << evs[i].data.fd << std::endl;
+            if ( it == reqMap.end() )
+            {
+                std::map<int, Response*>::iterator itr = resMap.begin();
+                for ( ; itr != resMap.end(); itr++)
+                {
+                    // std::cerr<<"--------------"<<std::endl;
+                    if (itr->second->pipfd[0] == evs[i].data.fd)
+                    {
+                        itr->second->cgi_data << read_from_a_pipe(evs[i].data.fd, itr->second->endOfCGI);
+                        continue;
+                    }
+                }
+                continue;
+            }
+            // std::cerr << "enditr->second->endOfCGIOfCGI : " << std::endl;
             if ( evs[i].events & EPOLLIN && !it->second->endOfRead )
                 if ( !spotIn( evs[i].data.fd, it->second, reqMap ) )
                     continue;

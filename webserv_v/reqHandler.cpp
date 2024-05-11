@@ -169,12 +169,9 @@ void    ReqHandler::fillReqHeaders()
     reqHds.clear();
 }
 
-
 int    ReqHandler::parseHeaders()
 {
-    // content-lenght // transfer-encoding // 
-    // content-type //  host
-    // std::string value;
+    getHeaderVal( "Cookie:", cookie );
     if ( !getHeaderVal( "Host:", value ) )
         return ( uri_depon_cs( 400 ), 0 );
     else
@@ -245,6 +242,30 @@ int dgbm( std::string r, std::string rq )
     return 1;
 }
 
+void    ReqHandler::storeQuery()
+{
+    size_t p = request.uri.find('?');
+    if ( p != std::string::npos )
+    {
+        query = request.uri.substr( p );
+        request.uri = request.uri.substr( 0, p );
+    }
+    p = request.uri.find(".php");
+    if ( p != std::string::npos )
+    {
+        pathInfo = request.uri.substr( p + 4 );
+        request.uri = request.uri.substr( 0, p + 4 );
+        return ;
+    }
+    p = request.uri.find(".py");
+    if ( p != std::string::npos )
+    {
+        pathInfo = request.uri.substr( p + 3 );
+        request.uri = request.uri.substr( 0, p + 3 );
+        return ;
+    }
+}
+
 void    ReqHandler::parse_request()
 {
     std::cout << "REQUEST PARSING -------------" << std::endl;
@@ -278,7 +299,10 @@ void    ReqHandler::parse_request()
     // get the server depending on headers and port number
 
     getFinalUri( req[1] );
-
+    storeQuery();
+    // std::cerr << " path info : " << pathInfo << std::endl;
+    // std::cerr << " query     : " << query << std::endl;
+    // std::cerr << " uri       : " << request.uri << std::endl;
     if ( !checkUrirPath( request.uri ) || !dgbm( myServ.root, request.uri ) )
         return ( uri_depon_cs( 403 ) );
     std::cout << "\033[31m============================" << "concat uri : " << request.uri << "\033[0m" << std::endl;
@@ -346,6 +370,7 @@ ReqHandler::ReqHandler( std::vector<Serv> &_myServ )
     size_counter = 0;
     bigScounter = 0;
     g = 0;
+    read_size = 1024;
     servs = _myServ;
     loc_idx = -1;
     bytes_red = 0;
