@@ -2,7 +2,7 @@ all good the server is pushed to the container of servers
 server 1 has : 1 location
 server : reda1 listen to port : 4444
 ---- IN reqhandler CONSTRUCTOR ----
-477 bytes popopo
+496 bytes popopo
 in check buffer
  >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
 [31mGET /cgi-php/p.php HTTP/1.1
@@ -11,12 +11,13 @@ User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
 Accept-Language: en-US,en;q=0.5
 Accept-Encoding: gzip, deflate, br
-Referer: http://localhost:4444/cgi-php/
 Connection: keep-alive
+Referer: http://localhost:4444/cgi-php
 Upgrade-Insecure-Requests: 1
 Sec-Fetch-Dest: document
 Sec-Fetch-Mode: navigate
 Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
 
 [0m
  >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
@@ -28,3 +29,5 @@ uri to split >>>>>>>> /cgi-php/p.php
 sent : 0 bytes
  Response destructor called
 destructor requesthandler is called
+---- IN reqhandler CONSTRUCTOR ----
+ATTETION ! 0 BYTES

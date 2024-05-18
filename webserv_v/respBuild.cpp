@@ -20,6 +20,7 @@ std::string Response::ret_folder()
 std::string     Response::list_folder()
 {
     std::stringstream response;
+    std::stringstream res;
     std::string old_p;
     struct dirent *entry;
     DIR *dir = opendir(req->request.uri.c_str());
@@ -44,7 +45,9 @@ std::string     Response::list_folder()
     response << "</body>";
     closedir(dir);
     endOfResp = 1;
-    return response.str();
+    res << "Content-Length: " << response.str().size() << "\r\n\r\n" << response.str();
+    std::cerr<<res.str()<<std::endl;
+    return res.str();
 }
 
 #include<stdlib.h> 
@@ -103,7 +106,7 @@ void    Response::env_init()
     std::string requestMethod    = "REQUEST_METHOD=";/**/
     std::string scriptName       = "SCRIPT_NAME=";/**/
     std::string serverName       = "SERVER_NAME=localhost";/**/
-    std::string serverPort       = "SERVER_PORT=";/**/
+    std::string serverPort       = "SERVER_PPORT=";/**/
     std::string serverProtocol   = "SERVER_PROTOCOL=HTTP/1.1";/**/
     // std::string pathInfo         = "PATH_INFO=/path/to/resource";
     // std::string pathTranslated   = "PATH_TRANSLATED=/var/www/html/resource";
@@ -141,7 +144,6 @@ void Response::exute_cgi()
 
     char buffer[1024];
     std::string bdy;
-    // ssize_t bytesRead;
     memset(buffer, 0, 1024);
     
     env_init();
@@ -168,9 +170,8 @@ void Response::exute_cgi()
         // alarm(child_timeout_seconds);
 
         char *str[4];
-        // close(pipfd[0]);
         dup2(pipfd[1], STDOUT_FILENO);
-        dup2(pipfd[1], STDERR_FILENO);
+        // dup2(pipfd[1], STDERR_FILENO);
         close(pipfd[1]);
 
         if (req->request.uri.find(".php") != std::string::npos)
@@ -196,17 +197,37 @@ void Response::exute_cgi()
         if (g == -1)
             std::cerr << "Error adding file descriptor to epoll instance: " << strerror(errno) << std::endl;
         child_ex = execve(str[0], str, NULL);
+        if (child_ex == -1)
+        {
+            std::cerr << "execve failed: " << strerror(errno) << std::endl;
+        }
         for (int i = 0; i < 3; ++i) {
             if (str[i] != NULL)
                 free(str[i]);
         }
+        // (void)child_ex;
         exit(child_ex);
     }
     else
     {
-        waitpid(c_pid, &cgi_status, WNOHANG);
+        w_pid = waitpid(c_pid, &cgi_status, WNOHANG);
         
-        std::cerr << "++++++++++++cgi status :" << cgi_status << std::endl;
+        // std::cerr << "++++++++++++cgi status :" << cgi_status << std::endl;
+
+        std::cerr << "w_pid: " << w_pid << std::endl << "c_pid: " << c_pid << std::endl;
+        if (w_pid == 0) {
+                // Child process is still running
+            std::cerr << "Child process is still running" << std::endl;
+        } else if (w_pid == c_pid) {
+            // Child process has terminated
+            if (WIFEXITED(cgi_status)) {
+                std::cerr << "Child process exited with status: " << WEXITSTATUS(cgi_status) << std::endl;
+            } else {
+                std::cerr << "Child process exited abnormally" << std::endl;;
+            }
+        } else {
+            std::cerr << "waitpid failed" << std::endl;
+        }
 
         // if (timeout_flag) {
         //     // Optionally, you can terminate the child process here
@@ -286,22 +307,21 @@ std::string  Response::cgi_response()
     char buffer[chunkSize];
     memset(buffer, 0, chunkSize);
 
-    // if (cgi_resp_start != true)
-    // {
-    //     cgi_resp_start = true;
-    //     response << "HTTP/1.1 200 OK\r\n";
-    //     response << "Content-Type: text/plain\r\n";
-    //     response << "Content-Length: " << cgi_data.str().size() << "\r\n";
-    //     response << "\r\n";
-    //     return response.str();
-    // }
+    if (cgi_resp_start != true)
+    {
+        cgi_resp_start = true;
+        response << "HTTP/1.1 200 OK\r\n";
+        response << "Content-Type: text/plain\r\n";
+        response << "Content-Length: " << cgi_data.str().size() - 1 << "\r\n";
+        response << "\r\n";
+        return response.str();
+    }
     cgi_data.read(buffer, chunkSize);
 
     if (cgi_data.gcount())
         response.write(buffer, cgi_data.gcount());
     else
         endOfResp = 1;
-    // std::cerr<<response.str() << "<<<<<<<<<<<<<<<<"<<std::endl;
     return response.str();
 }
 
@@ -387,6 +407,15 @@ int    Response::DELETE(const std::string& path)
     struct stat st;
     std::string fullPath;
 
+    if (folder == false)
+    {
+        if (access(path.c_str(), W_OK) == 0)
+            unlink(path.c_str());
+        else
+            return 1;
+        return 0;
+    }
+
     DIR* dir = opendir(path.c_str());
     if (!dir)
         return 1;
@@ -437,6 +466,13 @@ std::string Response::getHdResp()
     stat( req->request.uri.c_str(), &statbuf );
     if (req->request.method == "DELETE" && req->request.status == 200)
     {
+        if (stat(req->request.uri.c_str(), &statbuf) == 0)
+        {
+            if (S_ISDIR(statbuf.st_mode))
+                folder = true;
+            else
+                folder = false;
+        }
         if ( DELETE(req->request.uri) )
             req->uri_depon_cs( 500 );
         else
@@ -480,7 +516,8 @@ std::string Response::getHdResp()
     response << "Content-Type: ";
     response << get_file_ext(req->request.uri) << "\r\n";
     // response << "text/html" << "\r\n";
-    
+    if (folder)
+        return response.str();
     response << "Content-Length: ";
     if ( access(req->request.uri.c_str(), F_OK) )
         response << 522;
@@ -494,6 +531,9 @@ std::string Response::getHdResp()
 void    Response::getMethod()
 {
     std::string hdRes = getHdResp();
+    // std::cerr<<"+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
+    // std::cerr<<hdRes;
+    // std::cerr<<"+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
     ssize_t bytesSent = send( cliSock, hdRes.c_str(), hdRes.size(), 0);
     if ( (int)bytesSent == -1 )
     {
@@ -522,13 +562,13 @@ Response::Response( ReqHandler *_req, int _cliSock, int &ep_fd_ )
     endOfCGI = false;
     cgi_on = false;
     cgi_resp_start = false;
-    cType[""] = "text/plain";
-    cType["php"] = "text/plain";
-    cType["sh"] = "text/plain";
-    cType["py"] = "text/plain";
-    cType["txt"] = "text/plain";
-    cType["cpp"] = "text/plain";
-    cType["hpp"] = "text/plain";
+    cType[""] = "text/html";
+    cType["php"] = "text/html";
+    cType["sh"] = "text/html";
+    cType["py"] = "text/html";
+    cType["txt"] = "text/html";
+    cType["cpp"] = "text/html";
+    cType["hpp"] = "text/html";
     cType["html"] = "text/html";
     cType["jpg"] = "image/jpeg";
     cType["jpeg"] = "image/jpeg";

@@ -14,6 +14,7 @@ class Response {
         int ep_fd;
         int pipfd[2];
         pid_t c_pid;
+        pid_t w_pid;
         clock_t cgi_start;
         bool folder;
         bool endOfCGI;

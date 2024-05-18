@@ -158,11 +158,13 @@ int MultiPlexer::spotOut( int fd, ReqHandler* obj, std::map<int, Response*> &res
             {
                 float timeOut = static_cast<float>(end - itr->second->cgi_start) / CLOCKS_PER_SEC;
                 
-                if (WIFSIGNALED(itr->second->cgi_status))
-                    std::cerr << "ERRRRRRRROR : " << strerror(errno) << std::endl;
+                // if (WIFSIGNALED(itr->second->cgi_status))
+                //     std::cerr << "ERRRRRRRROR : " << strerror(errno) << std::endl;
 
                 if (itr->second->endOfCGI)
+                {
                     resp << itr->second->cgi_response();/*hena response akon dial cgi hadi atbedel*/
+                }
                 else if (timeOut > 4)
                 {
                     struct stat statbuf;
@@ -182,10 +184,10 @@ int MultiPlexer::spotOut( int fd, ReqHandler* obj, std::map<int, Response*> &res
             {
                 // std::cerr<<"folder : " << itr->second->folder <<std::endl;
                 resp << (itr->second->folder == false ? itr->second->read_from_a_file() : itr->second->list_folder());
-                // std::cerr<<"+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
-                // std::cerr<<resp<<std::endl;
-                // std::cerr<<"+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
             }
+            // std::cerr<<"+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
+            // std::cerr<<resp.str();
+            // std::cerr<<"+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
             bytesSent = send( fd, resp.str().c_str(), resp.str().size(), 0);
         }
         if ( itr->second->endOfResp || (int)bytesSent == -1 )
@@ -262,7 +264,7 @@ void    MultiPlexer::webServLoop( std::vector<Serv> &servers )
                 {
                     // std::cerr<<"--------------"<<std::endl;
                     if (itr->second->pipfd[0] == evs[i].data.fd)
-                    {
+                    { 
                         itr->second->cgi_data << read_from_a_pipe(evs[i].data.fd, itr->second->endOfCGI);
                         continue;
                     }
