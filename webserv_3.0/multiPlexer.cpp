@@ -47,7 +47,8 @@ MultiPlexer::MultiPlexer( std::vector<Serv> &servers )
 
     if ( epollFd == -1 )
         throw std::runtime_error( "Epoll creation failed");
-    for ( std::vector<Serv>::iterator it = servers.begin() ; it != servers.end() ; it++ ) {
+    for ( std::vector<Serv>::iterator it = servers.begin() ; it != servers.end() ; it++ )
+    {
         // if ( !existentSockForPort( it->port ) )
         // {
             int sock = socket( AF_INET, SOCK_STREAM, 0 );
@@ -109,13 +110,12 @@ int MultiPlexer::spotIn( int fd, ReqHandler* obj, std::map<int, ReqHandler*> &re
     obj->clock_out = clock();
     if ( (int)bytes == -1 )
     {
-        std::cerr << "error read failed 1" << std::endl;
+        std::cerr << "error read failed" << std::endl;
         close( fd );
         return 0;
     }
     else if ( !bytes )
     {
-        std::cout << "ATTETION ! 0 BYTES" << std::endl;
         delSockFrEpoll( fd );
         serv_cli.erase( fd );
         reqMap.erase( fd );
@@ -162,9 +162,7 @@ int MultiPlexer::spotOut( int fd, ReqHandler* obj, std::map<int, Response*> &res
                 //     std::cerr << "ERRRRRRRROR : " << strerror(errno) << std::endl;
 
                 if (itr->second->endOfCGI)
-                {
                     resp << itr->second->cgi_response();/*hena response akon dial cgi hadi atbedel*/
-                }
                 else if (timeOut > 4)
                 {
                     struct stat statbuf;
@@ -184,10 +182,10 @@ int MultiPlexer::spotOut( int fd, ReqHandler* obj, std::map<int, Response*> &res
             {
                 // std::cerr<<"folder : " << itr->second->folder <<std::endl;
                 resp << (itr->second->folder == false ? itr->second->read_from_a_file() : itr->second->list_folder());
+                // std::cerr<<"+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
+                // std::cerr<<resp<<std::endl;
+                // std::cerr<<"+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
             }
-            // std::cerr<<"+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
-            // std::cerr<<resp.str();
-            // std::cerr<<"+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
             bytesSent = send( fd, resp.str().c_str(), resp.str().size(), 0);
         }
         if ( itr->second->endOfResp || (int)bytesSent == -1 )
@@ -264,7 +262,7 @@ void    MultiPlexer::webServLoop( std::vector<Serv> &servers )
                 {
                     // std::cerr<<"--------------"<<std::endl;
                     if (itr->second->pipfd[0] == evs[i].data.fd)
-                    { 
+                    {
                         itr->second->cgi_data << read_from_a_pipe(evs[i].data.fd, itr->second->endOfCGI);
                         continue;
                     }
