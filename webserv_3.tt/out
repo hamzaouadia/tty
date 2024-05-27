@@ -1,0 +1,241 @@
+all good the server is pushed to the container of servers
+server 1 has : 3 location
+server : reda1.com listen to port : 4444
+---- IN reqhandler CONSTRUCTOR ----
+489 bytes popopo
+in check buffer
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+[31mGET /cgi-php HTTP/1.1
+Host: localhost:4444
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Cookie: PHPSESSID=u794lkqla2kv9r0rkl9cij9fsp
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: none
+Sec-Fetch-User: ?1
+
+[0m
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+REQUEST PARSING -------------
+parse Headers here
+uri to split >>>>>>>> /cgi-php
+[31m============================concat uri : /home/maker/Desktop/www/cgi-php[0m
+HERE locIDX : 0
+-------- request URI -----------/home/maker/Desktop/www/cgi-php
+sent : 42 bytes
+ Response destructor called
+destructor requesthandler is called
+---- IN reqhandler CONSTRUCTOR ----
+546 bytes popopo
+in check buffer
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+[31mGET /cgi-php/login.php HTTP/1.1
+Host: localhost:4444
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Referer: http://localhost:4444/cgi-php
+Cookie: PHPSESSID=u794lkqla2kv9r0rkl9cij9fsp
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
+
+[0m
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+REQUEST PARSING -------------
+parse Headers here
+uri to split >>>>>>>> /cgi-php/login.php
+[31m============================concat uri : /home/maker/Desktop/www/cgi-php/login.php[0m
+-------- request URI -----------/home/maker/Desktop/www/cgi-php/login.php
+sent : 0 bytes
+ Response destructor called
+destructor requesthandler is called
+---- IN reqhandler CONSTRUCTOR ----
+688 bytes popopo
+in check buffer
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+[31mPOST /cgi-php/login.php HTTP/1.1
+Host: localhost:4444
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 31
+Origin: http://localhost:4444
+Connection: keep-alive
+Referer: http://localhost:4444/cgi-php/login.php
+Cookie: PHPSESSID=u794lkqla2kv9r0rkl9cij9fsp
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
+
+username=dfasfads&title=asdfdsa[0m
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+REQUEST PARSING -------------
+parse Headers here
+uri to split >>>>>>>> /cgi-php/login.php
+[31m============================concat uri : /home/maker/Desktop/www/cgi-php/login.php[0m
+-------- request URI -----------/home/maker/Desktop/www/cgi-php/login.php
+sent : 0 bytes
+ Response destructor called
+destructor requesthandler is called
+---- IN reqhandler CONSTRUCTOR ----
+558 bytes popopo
+in check buffer
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+[31mGET /cgi-php/welcome.php HTTP/1.1
+Host: localhost:4444
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Referer: http://localhost:4444/cgi-php/login.php
+Connection: keep-alive
+Cookie: PHPSESSID=u794lkqla2kv9r0rkl9cij9fsp
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
+
+[0m
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+REQUEST PARSING -------------
+parse Headers here
+uri to split >>>>>>>> /cgi-php/welcome.php
+[31m============================concat uri : /home/maker/Desktop/www/cgi-php/welcome.php[0m
+-------- request URI -----------/home/maker/Desktop/www/cgi-php/welcome.php
+sent : 0 bytes
+ Response destructor called
+destructor requesthandler is called
+---- IN reqhandler CONSTRUCTOR ----
+556 bytes popopo
+in check buffer
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+[31mGET /cgi-php/login.php HTTP/1.1
+Host: localhost:4444
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Referer: http://localhost:4444/cgi-php/login.php
+Connection: keep-alive
+Cookie: PHPSESSID=u794lkqla2kv9r0rkl9cij9fsp
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
+
+[0m
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+REQUEST PARSING -------------
+parse Headers here
+uri to split >>>>>>>> /cgi-php/login.php
+[31m============================concat uri : /home/maker/Desktop/www/cgi-php/login.php[0m
+-------- request URI -----------/home/maker/Desktop/www/cgi-php/login.php
+sent : 0 bytes
+ Response destructor called
+destructor requesthandler is called
+---- IN reqhandler CONSTRUCTOR ----
+489 bytes popopo
+in check buffer
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+[31mGET /cgi-php HTTP/1.1
+Host: localhost:4444
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Cookie: PHPSESSID=u794lkqla2kv9r0rkl9cij9fsp
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: none
+Sec-Fetch-User: ?1
+
+[0m
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+REQUEST PARSING -------------
+parse Headers here
+uri to split >>>>>>>> /cgi-php
+[31m============================concat uri : /home/maker/Desktop/www/cgi-php[0m
+HERE locIDX : 0
+-------- request URI -----------/home/maker/Desktop/www/cgi-php
+sent : 42 bytes
+ Response destructor called
+destructor requesthandler is called
+---- IN reqhandler CONSTRUCTOR ----
+544 bytes popopo
+in check buffer
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+[31mGET /cgi-php/php.php HTTP/1.1
+Host: localhost:4444
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Referer: http://localhost:4444/cgi-php
+Cookie: PHPSESSID=u794lkqla2kv9r0rkl9cij9fsp
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
+
+[0m
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+REQUEST PARSING -------------
+parse Headers here
+uri to split >>>>>>>> /cgi-php/php.php
+[31m============================concat uri : /home/maker/Desktop/www/cgi-php/php.php[0m
+-------- request URI -----------/home/maker/Desktop/www/cgi-php/php.php
+sent : 0 bytes
+ Response destructor called
+destructor requesthandler is called
+---- IN reqhandler CONSTRUCTOR ----
+---- IN reqhandler CONSTRUCTOR ----
+---- IN reqhandler CONSTRUCTOR ----
+544 bytes popopo
+in check buffer
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+[31mGET /cgi-php/php.php HTTP/1.1
+Host: localhost:4444
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Referer: http://localhost:4444/cgi-php
+Cookie: PHPSESSID=u794lkqla2kv9r0rkl9cij9fsp
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
+
+[0m
+ >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << 
+REQUEST PARSING -------------
+parse Headers here
+uri to split >>>>>>>> /cgi-php/php.php
+[31m============================concat uri : /home/maker/Desktop/www/cgi-php/php.php[0m
+-------- request URI -----------/home/maker/Desktop/www/cgi-php/php.php
+sent : 0 bytes
+---- IN reqhandler CONSTRUCTOR ----
+ Response destructor called
+destructor requesthandler is called

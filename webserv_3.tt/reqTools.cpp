@@ -40,7 +40,6 @@ int find_me( char c )
 
 int checkUri( std::string &str )
 {
-    std::cerr << "****+*+*****+*+*+*+**+*+*+*+" << str << std::endl;
     str = decodeUri( str );
     for( size_t i = 0 ; i < str.size() ; i++ )
         if( !find_me( str[i] ) )
