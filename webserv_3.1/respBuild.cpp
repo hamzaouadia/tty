@@ -27,22 +27,27 @@ std::string     Response::list_folder()
 
     if (dir == NULL)
       return "";
-    response << "<!DOCTYPE html><html><head><title> listing a folder </title></head><body>";
+    response << "<!DOCTYPE html>";
+    response << "<html lang=\"en\">";
+    response << "<head><meta charset=\"UTF-8\">";
+    response << "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">";
+    response << "<title>Animated Underline</title>";
+    response << "<link rel=\"stylesheet\" href=\"/listourserver.css\"></head><body>";
+    response << "<div>";
     while ((entry = readdir(dir)) != NULL)
     {
         old_p = ret_folder();
         if (std::string(entry->d_name) == "." || std::string(entry->d_name) == "..")
             continue;
-        response << "<div>";
-        response << "<a href=\"";
+        response << "<h2><a href=\"";
         if (req->loc_idx != -1)
             if (req->myServ.locations[req->loc_idx].name != "/")
                 response << req->myServ.locations[req->loc_idx].name << "/";
-        response << old_p << entry->d_name << "\">" << entry->d_name << "</a>";
-        response << "</div>";
+        response << old_p << entry->d_name << "\">" << entry->d_name << "</h2>";
 
     }
-    response << "</body>";
+    response << "</div>";
+    response << "</body></html>";
     closedir(dir);
     endOfResp = 1;
     res << "Content-Length: " << response.str().size() << "\r\n\r\n" << response.str();
@@ -104,9 +109,9 @@ void    Response::env_init()
     std::string queryString      = "QUERY_STRING=";
     std::string redirectstatus   = "REDIRECT_STATUS=200";
     std::string requestMethod    = "REQUEST_METHOD=";/**/
-    std::string scriptName       = "SCRIPT_NAME=";/**/
+    std::string scriptName       = "SCRIPT_FILENAME=";/**/
     std::string serverName       = "SERVER_NAME=localhost";/**/
-    std::string serverPort       = "SERVER_PPORT=";/**/
+    std::string serverPort       = "SERVER_PORT=";/**/
     std::string serverProtocol   = "SERVER_PROTOCOL=HTTP/1.1";/**/
     std::string pathInfo         = "PATH_INFO=";
     std::string cookie           = "HTTP_COOKIE=";
@@ -134,8 +139,8 @@ void    Response::env_init()
     this->env[10] = strdup((cookie + req->cookie).c_str());/**/
     this->env[11] = NULL;
 
-    for (int i = 0; i < 10; ++i)
-        std::cerr << this->env[i] << std::endl;
+    // for (int i = 0; i < 10; ++i)
+    //     std::cerr << this->env[i] << std::endl;
     // this->env[4] = strdup((pathInfo + "").c_str());
     // this->env[5] = strdup((pathTranslated + "").c_str());
     // this->env[7] = strdup((remoteAddr + "").c_str());
@@ -166,7 +171,7 @@ void Response::exute_cgi()
         return;
     else if (c_pid == 0)
     {
-        char *str[4];
+        char *str[3];
         dup2(pipfd[1], STDOUT_FILENO);
         // dup2(pipfd[1], STDERR_FILENO);
         close(pipfd[1]);
@@ -175,16 +180,14 @@ void Response::exute_cgi()
         if (req->request.uri.find(".php") != std::string::npos)
         {
             str[0] = strdup("/usr/bin/php-cgi");
-            str[1] = strdup("-q");
-            str[2] = strdup(req->request.uri.c_str());
-            str[3] = NULL;
+            str[1] = strdup(req->request.uri.c_str());
+            str[2] = NULL;
         }
         else if (req->request.uri.find(".py") != std::string::npos)
         {
-            str[0] = strdup("/usr/bin/python3.11");
+            str[0] = strdup("/usr/bin/python3");
             str[1] = strdup(req->request.uri.c_str());
             str[2] = NULL;
-            str[3] = NULL;
         }
 
         struct epoll_event ev;
@@ -194,7 +197,7 @@ void Response::exute_cgi()
         int g = epoll_ctl( ep_fd, EPOLL_CTL_ADD, pipfd[0], &ev );
         if (g == -1)
             std::cerr << "Error adding file descriptor to epoll instance: " << strerror(errno) << std::endl;
-        if (execve(str[0], str, NULL) == -1) {
+        if (execve(str[0], str, env) == -1) {
             std::cerr << "Failed to execute CGI script" << std::endl;
         }
         for (int i = 0; i < 3; ++i) {
@@ -209,7 +212,6 @@ void Response::exute_cgi()
         w_pid = waitpid(c_pid, &cgi_status, WNOHANG);
         
         // std::cerr << "++++++++++++cgi status :" << cgi_status << std::endl;
-
         std::cerr << "w_pid: " << w_pid << std::endl << "c_pid: " << c_pid << std::endl;
         if (w_pid == 0) {
                 // Child process is still running
@@ -236,13 +238,36 @@ std::string  Response::cgi_response()
     char buffer[chunkSize];
     memset(buffer, 0, chunkSize);
 
+
     if (cgi_resp_start != true)
     {
         cgi_resp_start = true;
+        if (cgi_data.str().find("Status: 302 Found") != std::string::npos)
+        {
+            std::string lc;
+
+            while (getline(cgi_data, lc))
+            {
+                if (lc.find("Location: ") != std::string::npos)
+                    break ;
+            }
+            response << "HTTP/1.1 " << 302 << "\r\n";
+            response << lc;
+            endOfResp = 1;
+            return response.str();
+        }
+
+        std::string cgi_data_str = cgi_data.str();
+        size_t pos = cgi_data_str.find("\r\n\r\n");
+        if (pos != std::string::npos) {
+            std::string body = cgi_data_str.substr(pos + 4);
+            cgi_data.str(body);
+        }
+
         response << "HTTP/1.1 200 OK\r\n";
-        response << "Content-Type: text/html\r\n";
-        response << "Content-Length: " << cgi_data.str().size() << "\r\n";
-        response << "\r\n";
+        response << "Content-Type: " << "text/html" << "\r\n";
+        response << "Content-Length: " << cgi_data.str().size();
+        response << "\r\n\r\n";
         return response.str();
     }
     cgi_data.read(buffer, chunkSize);
@@ -282,10 +307,6 @@ std::string     Response::read_from_a_file()
         response << "This File is not Found! Please Check the your default files.";
         endOfResp = 1;
         return response.str();
-        // creat a function that print the 404 err page if not found!
-        // req->uri_depon_cs( 404 );
-        // response << read_from_a_file();
-        // endOfResp = 1;
     }
     return response.str();
 }
@@ -304,7 +325,7 @@ std::string Response::get_file_ext(std::string path)
 
 bool    Response::is_cgi()
 {
-    if (req->loc_idx == -1 || req->request.method != "GET" || (req->request.uri.find(".php") == std::string::npos && req->request.uri.find(".py") == std::string::npos))
+    if (req->loc_idx == -1 || (req->request.uri.find(".php") == std::string::npos && req->request.uri.find(".py") == std::string::npos))
         return false;
     std::string cgi = req->request.uri.substr(req->request.uri.rfind(".") + 1, req->request.uri.size());
 
@@ -388,6 +409,11 @@ std::string Response::getHdResp()
     stat( req->request.uri.c_str(), &statbuf );
     if (req->request.method == "DELETE" && req->request.status == 200)
     {
+        if ( access(req->request.uri.c_str(), F_OK) )
+        {
+            req->uri_depon_cs( 404 );
+            return response.str();
+        }
         if (stat(req->request.uri.c_str(), &statbuf) == 0)
         {
             if (S_ISDIR(statbuf.st_mode))
@@ -402,8 +428,8 @@ std::string Response::getHdResp()
             response << "HTTP/1.1 " << 204 << "No Content";
             response << "\r\n\r\n";
             // req->uri_depon_cs( 200 );
+            endOfResp = 1;
         }
-        // endOfResp = 1;
         // response << read_from_a_file();
         // std::cerr << "DELETE" << std::endl;
         // std::cerr << response.str() << std::endl;
@@ -448,6 +474,7 @@ std::string Response::getHdResp()
     if (folder)
         return response.str();
     response << "Content-Length: ";
+    
     if ( access(req->request.uri.c_str(), F_OK) )
         response << 522;
     else
@@ -465,20 +492,7 @@ void    Response::getMethod()
     // std::cerr<<"+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
     ssize_t bytesSent = send( cliSock, hdRes.c_str(), hdRes.size(), 0);
     if ( (int)bytesSent == -1 )
-    {
-        std::cout << "failed send" << std::endl;
-    }
-    else
-    {
-        std::cout << "sent : " << bytesSent << " bytes" <<std::endl;
-        // endOfResp = 1;
-        // std::cout << "data Sent Yes ......." << std::endl;
-        // delSockFrEpoll( evs[i].data.fd );
-        // delete( it->second );
-        // reqMap.erase( evs[i].data.fd );
-        // serv_cli.erase( evs[i].data.fd );
-        // close( evs[i].data.fd );
-    }
+        endOfResp = 1;
 }
 
 Response::Response( ReqHandler *_req, int _cliSock, int &ep_fd_ )

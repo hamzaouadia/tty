@@ -165,6 +165,8 @@ int MultiPlexer::spotOut( int fd, ReqHandler* obj, std::map<int, Response*> &res
                     resp << itr->second->cgi_response();/*hena response akon dial cgi hadi atbedel*/
                 else if (timeOut > 4)
                 {
+                    kill(itr->second->c_pid, SIGKILL);
+                    waitpid(itr->second->c_pid, 0, 0);
                     struct stat statbuf;
                     itr->second->req->uri_depon_cs(500);
                     stat( itr->second->req->request.uri.c_str(), &statbuf );
@@ -204,8 +206,7 @@ int MultiPlexer::spotOut( int fd, ReqHandler* obj, std::map<int, Response*> &res
     }
     return 1;
 }
-
-std::string     MultiPlexer::read_from_a_pipe(int fd, bool &pipe_closed)
+std::string     MultiPlexer::read_from_a_pipe(int fd, bool &pipe_closed, int &c_pid)
 {
     std::stringstream response;
     const int chunkSize = 1024;
@@ -219,6 +220,9 @@ std::string     MultiPlexer::read_from_a_pipe(int fd, bool &pipe_closed)
     else
     {
         struct epoll_event ev;
+        std::cerr << "c_pid killed: "<< c_pid << std::endl;
+        kill(c_pid, SIGKILL);
+        waitpid(c_pid, 0, 0);
         ev.events = EPOLLIN;
         ev.data.fd = fd;
         // std::cerr<<"fd " << ev.data.fd << std::endl;
@@ -257,13 +261,14 @@ void    MultiPlexer::webServLoop( std::vector<Serv> &servers )
             // std::cerr << "checker : " << evs[i].data.fd << std::endl;
             if ( it == reqMap.end() )
             {
+                // std::cerr << "this is me : " << evs[i].data.fd << std::endl;
                 std::map<int, Response*>::iterator itr = resMap.begin();
                 for ( ; itr != resMap.end(); itr++)
                 {
                     // std::cerr<<"--------------"<<std::endl;
                     if (itr->second->pipfd[0] == evs[i].data.fd)
                     {
-                        itr->second->cgi_data << read_from_a_pipe(evs[i].data.fd, itr->second->endOfCGI);
+                        itr->second->cgi_data << read_from_a_pipe(evs[i].data.fd, itr->second->endOfCGI, itr->second->c_pid);
                         continue;
                     }
                 }
@@ -280,6 +285,7 @@ void    MultiPlexer::webServLoop( std::vector<Serv> &servers )
             float timeOut = static_cast<float>(end - it->second->clock_out) / CLOCKS_PER_SEC;
             if ( timeOut >= 10 )
             {
+                std::cerr << "here im : " << evs[i].data.fd << " : " << end << " - " << it->second->clock_out << std::endl;
                 it->second->deleteFile();
                 it->second->uri_depon_cs( 408 );
             }
