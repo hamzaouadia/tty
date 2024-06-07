@@ -20,7 +20,7 @@ void    lcs_num( std::vector<Serv> servers )
         int n = 0;
         for ( size_t j = 0 ; j < servers[i].locations.size() ; j++ )
             n++;
-        std::cout << "server " << i + 1 << " has : " << n << " location" << std::endl;
+        // std::cout << "server " << i + 1 << " has : " << n << " location" << std::endl;
     }
 }
 

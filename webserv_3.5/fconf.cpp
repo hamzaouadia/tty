@@ -197,7 +197,7 @@ void Fconf::checkServ( std::vector<std::string> &serv )
         { // if myserv doesnt exist
             root_loc_ifndef( myserv );
             myServers.push_back( myserv );
-            std::cout << "all good the server is pushed to the container of servers" << std::endl;
+            // std::cout << "all good the server is pushed to the container of servers" << std::endl;
         }
     }
     catch ( std::exception &e )

@@ -91,7 +91,7 @@ std::string ReqHandler::getFullUri( std::vector<std::string> &spl_uri, std::stri
 void ReqHandler::getFinalUri( std::string str )
 {
     std::vector<std::string> splited_uri = split_uri( str );
-    std::cout << "uri to split >>>>>>>> " << str << std::endl;
+    // std::cout << "uri to split >>>>>>>> " << str << std::endl;
     if ( !splited_uri.size() )
     {
         std::string loc_str = "/";
@@ -172,7 +172,7 @@ void    ReqHandler::fillReqHeaders()
 int    ReqHandler::parseHeaders()
 {
     getHeaderVal( "Cookie:", cookie );
-    std::cerr << "cookiiiiiie : " << cookie << std::endl;
+    // std::cerr << "cookiiiiiie : " << cookie << std::endl;
     if ( !getHeaderVal( "Host:", value ) )
         return ( uri_depon_cs( 400 ), 0 );
     else
@@ -208,7 +208,7 @@ int    ReqHandler::parseHeaders()
             }
         }
     }
-    std::cout << "parse Headers here" << std::endl;
+    // std::cout << "parse Headers here" << std::endl;
     return 1;
 }
 
@@ -280,7 +280,7 @@ void    ReqHandler::storeQuery()
 
 void    ReqHandler::parse_request()
 {
-    std::cout << "REQUEST PARSING -------------" << std::endl;
+    // std::cout << "REQUEST PARSING -------------" << std::endl;
     if ( !reqHds.size() )
         return( uri_depon_cs( 400 ) );
     if ( reqHds.front().size() > 500 )
@@ -317,7 +317,7 @@ void    ReqHandler::parse_request()
     // std::cerr << " uri       : " << request.uri << std::endl;
     if ( !checkUrirPath( request.uri ) || !dgbm( myServ.locations[loc_idx].root, request.uri ) )
         return ( uri_depon_cs( 403 ) );
-    std::cout << "\033[31m============================" << "concat uri : " << request.uri << "\033[0m" << std::endl;
+    // std::cout << "\033[31m============================" << "concat uri : " << request.uri << "\033[0m" << std::endl;
     if ( request.method == "GET" )
         checkRetIdx(); 
     if ( request.method != "POST" )
@@ -327,7 +327,7 @@ void    ReqHandler::parse_request()
         if ( !endOfRead )
             pFileOpener();
     }
-    std::cout << "-------- request URI -----------" <<  request.uri << std::endl;
+    // std::cout << "-------- request URI -----------" <<  request.uri << std::endl;
 }
 
 void    ReqHandler::nextBuff( char *buff, size_t bytes )// take the size returned by read()
@@ -362,11 +362,11 @@ void    ReqHandler::checkBuff( char *buff, size_t bytes )
 {
     std::string myData( buff , bytes );
     passedOnce = true;
-    std::cout << bytes << " bytes popopo" << std::endl;
-    std::cout << "in check buffer" << std::endl;
-    std::cout << " >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << " << std::endl;
-    std::cout << "\033[31m" << myData << "\033[0m" << std::endl;
-    std::cout << " >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << " << std::endl;
+    // std::cout << bytes << " bytes popopo" << std::endl;
+    // std::cout << "in check buffer" << std::endl;
+    // std::cout << " >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << " << std::endl;
+    // std::cout << "\033[31m" << myData << "\033[0m" << std::endl;
+    // std::cout << " >> -*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* << " << std::endl;
     countBodyBytes( myData );
     std::istringstream src( non_body_str );
     std::string line;
@@ -389,12 +389,12 @@ ReqHandler::ReqHandler( std::vector<Serv> &_myServ )
     content_lenght = -1;
     bodyStartFound = false;
     endOfRead = 0;
-    std::cout << "---- IN reqhandler CONSTRUCTOR ----" << std::endl;
+    // std::cout << "---- IN reqhandler CONSTRUCTOR ----" << std::endl;
 }
 
 ReqHandler::~ReqHandler()
 { 
-    std::cout << "destructor requesthandler is called" << std::endl;
+    // std::cout << "destructor requesthandler is called" << std::endl;
     if ( pFile.is_open() )
         pFile.close();
 }

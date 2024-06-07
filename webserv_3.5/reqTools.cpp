@@ -72,7 +72,7 @@ void    ReqHandler::checkRetIdx()
 {
     if ( loc_idx != -1 && myServ.locations[loc_idx].redirection.size() && request.method == "GET" ) // Method get check this
     {
-        std::cout << "location name --> " << myServ.locations[loc_idx].name << std::endl;
+        // std::cout << "location name --> " << myServ.locations[loc_idx].name << std::endl;
         request.uri = myServ.locations[loc_idx].redirection;
         request.status = 301;
     }
@@ -82,7 +82,7 @@ void    ReqHandler::checkRetIdx()
         {
             if ( !myServ.locations[loc_idx].index.size() )
             {
-                std::cout << "HERE locIDX : " << loc_idx << std::endl;
+                // std::cout << "HERE locIDX : " << loc_idx << std::endl;
                 if ( myServ.locations[loc_idx].autoidx == "on" )
                     request.status = 200;
                 else

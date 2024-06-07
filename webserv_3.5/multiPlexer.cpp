@@ -106,6 +106,9 @@ int MultiPlexer::spotIn( int fd, ReqHandler* obj, std::map<int, ReqHandler*> &re
     char buff[obj->read_size];
     memset(buff, 0, sizeof(buff) );
     size_t bytes = read( fd, buff, sizeof(buff) - 1 );
+    // std::cerr << "******************" << std::endl;
+    // std::cerr << buff << std::endl;
+    // std::cerr << "******************" << std::endl;
     obj->clock_out = clock();
     if ( (int)bytes <= 0 )
     {
@@ -118,7 +121,7 @@ int MultiPlexer::spotIn( int fd, ReqHandler* obj, std::map<int, ReqHandler*> &re
     if ( !obj->passedOnce )
     {
         obj->checkBuff( buff, bytes );
-        std::cerr << obj->request.uri << std::endl;
+        // std::cerr << obj->request.uri << std::endl;
     }
     else
     {   
@@ -135,9 +138,6 @@ int MultiPlexer::spotOut( int fd, ReqHandler* obj, std::map<int, Response*> &res
     if ( itr == resMap.end() )
     {
         Response *rs = new Response( obj, fd, epollFd );
-        // rs->ep_fd = epollFd;
-        // std::cerr << "rs->ep_fd mult : "<< rs->ep_fd << std::endl;
-        // std::cerr << "************" << rs->endOfResp <<std::endl;
         resMap[fd] = rs;
     }
     else
@@ -150,13 +150,9 @@ int MultiPlexer::spotOut( int fd, ReqHandler* obj, std::map<int, Response*> &res
             if (itr->second->cgi_on)
             {
                 float timeOut = static_cast<float>(end - itr->second->cgi_start) / CLOCKS_PER_SEC;
-                
-                // if (WIFSIGNALED(itr->second->cgi_status))
-                //     std::cerr << "ERRRRRRRROR : " << strerror(errno) << std::endl;
-
                 if (itr->second->endOfCGI)
                     resp << itr->second->cgi_response();/*hena response akon dial cgi hadi atbedel*/
-                else if (timeOut > 4)
+                else if (timeOut > 10)
                 {
                     kill(itr->second->c_pid, SIGKILL);
                     waitpid(itr->second->c_pid, 0, 0);
@@ -174,13 +170,7 @@ int MultiPlexer::spotOut( int fd, ReqHandler* obj, std::map<int, Response*> &res
                 }
             }
             if (itr->second->cgi_on == false)
-            {
-                // std::cerr<<"folder : " << itr->second->folder <<std::endl;
                 resp << (itr->second->folder == false ? itr->second->read_from_a_file() : itr->second->list_folder());
-                // std::cerr<<"+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
-                // std::cerr<<resp<<std::endl;
-                // std::cerr<<"+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
-            }
             bytesSent = send( fd, resp.str().c_str(), resp.str().size(), 0);
         }
         if ( itr->second->endOfResp || (int)bytesSent == -1 )
@@ -198,21 +188,29 @@ int MultiPlexer::spotOut( int fd, ReqHandler* obj, std::map<int, Response*> &res
     return 1;
 }
 
-std::string     MultiPlexer::read_from_a_pipe(int fd, bool &pipe_closed, int &c_pid)
+std::string     MultiPlexer::read_from_a_pipe(int fd, bool &pipe_closed, int &c_pid, std::string &method)
 {
     std::stringstream response;
     const int chunkSize = 1024;
-    pipe_closed = false;
     char buffer[chunkSize + 1];
     memset(buffer, 0, chunkSize);
-    size_t bytesRead = read(fd, buffer, chunkSize);
-    // response << std::hex << bytesRead << "\r\n";
+    size_t bytesRead = 0;
+    pipe_closed = false;
+    (void)method;   
+    // if (method != "POST")
+        bytesRead = read(fd, buffer, chunkSize);
+
+    // std::cerr << "******************" << std::endl;
+    // std::cerr << "byterads :" << bytesRead << std::endl;
+    // std::cerr << buffer << std::endl;
+    // std::cerr << "******************" << std::endl;
+
     if (bytesRead)
         response.write(buffer, bytesRead);
     else
     {
         struct epoll_event ev;
-        std::cerr << "c_pid killed: "<< c_pid << std::endl;
+        // std::cerr << "c_pid killed: "<< c_pid << std::endl;
         kill(c_pid, SIGKILL);
         waitpid(c_pid, 0, 0);
         ev.events = EPOLLIN;
@@ -223,6 +221,7 @@ std::string     MultiPlexer::read_from_a_pipe(int fd, bool &pipe_closed, int &c_
             std::cerr << "Error : " << strerror(errno) << std::endl;        // delSockFrEpoll(fd);
         close(fd);
         pipe_closed = true;
+        // std::cerr << response.str() << std::endl;
         // std::cerr<<pipe_closed<<std::endl;
     }
     return response.str();
@@ -256,10 +255,9 @@ void    MultiPlexer::webServLoop( std::vector<Serv> &servers )
                 std::map<int, Response*>::iterator itr = resMap.begin();
                 for ( ; itr != resMap.end(); itr++)
                 {
-                    // std::cerr<<"--------------"<<std::endl;
                     if (itr->second->pipfd[0] == evs[i].data.fd)
                     {
-                        itr->second->cgi_data << read_from_a_pipe(evs[i].data.fd, itr->second->endOfCGI, itr->second->c_pid);
+                        itr->second->cgi_data << read_from_a_pipe(evs[i].data.fd, itr->second->endOfCGI, itr->second->c_pid, itr->second->req->request.method);
                         continue;
                     }
                 }
